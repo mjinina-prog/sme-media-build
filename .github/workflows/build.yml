@@ -221,4 +221,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ inputs.release_tag }}" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "sme-media ${{ inputs.release_tag }}" --notes-file RELEASE_NOTES.md out/release/*
+            --prerelease --title "sme-media ${{ inputs.release_tag }}" --notes-file RELEASE_NOTES.md out/release/*

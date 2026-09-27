@@ -1,5 +1,8 @@
 Construction de sme-media-build. Commits et digests : voir `pins.env` au commit de la release.
 
+Statut : construction candidate, produite pour mesure (Étape 0 du chantier LIBMPV de SME Subtitle Editor).
+Elle n'est livrée avec aucune version de SME.
+
 Contenu :
 - `sme-media-*-win64-runtime.tar.xz` : les huit DLL (FFmpeg 8.1 partagé, libmpv-2.dll) et leurs licences ;
 - `sme-media-*-win64-dev.tar.xz` : en-têtes, bibliothèques d'import, pkg-config ;

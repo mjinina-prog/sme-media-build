@@ -155,6 +155,7 @@ build_ffmpeg() {
         --extra-ldflags="-L$PREFIX/lib -static-libgcc -fstack-protector-strong"
         --disable-everything --disable-autodetect
         --disable-network --disable-doc --disable-debug
+        --disable-stripping
         --enable-shared --disable-static
         --disable-programs --enable-ffprobe
         --enable-w32threads
@@ -384,6 +385,12 @@ collect() {
     cp "$PREFIX"/lib/libmpv.dll.a "$OUT/dev/libmpv/lib/"
     cp "$SRC/mpv/LICENSE.LGPL" "$OUT/dev/libmpv/"
     cp "$SRC/ffmpeg-${FFMPEG_COMMIT:0:7}/COPYING.LGPLv2.1" "$SRC/ffmpeg-${FFMPEG_COMMIT:0:7}/LICENSE.md" "$OUT/dev/ffmpeg/"
+    # tables d'import relevées par objdump (M3) ; audit.py les relit par son propre analyseur PE
+    for f in "$OUT"/bin/*.dll "$OUT"/probe/*.exe; do
+        echo "== $(basename "$f")"
+        "$T-objdump" -p "$f" | grep -E '^[[:space:]]*DLL Name:' || true
+    done > "$OUT/meta/objdump-imports.txt"
+    cat "$OUT/meta/objdump-imports.txt"
     # empreintes
     (cd "$OUT" && sha256sum bin/* probe/* unstripped/* > meta/SHA256SUMS)
     ls -l "$OUT/bin" "$OUT/unstripped" "$OUT/probe" "$OUT/maps"
