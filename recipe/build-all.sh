@@ -80,9 +80,9 @@ record_toolchain() {
         grep -E '^(PRETTY_NAME|VERSION_ID)=' /etc/os-release || true
         "$T-gcc" --version | head -1
         "$T-ld" --version | head -1
-        printf 'mingw-w64 : '
-        grep -h '#define __MINGW64_VERSION_STR' /opt/ct-ng/"$T"/sysroot/mingw/include/_mingw_mac.h 2>/dev/null \
-            || grep -rh '#define __MINGW64_VERSION_STR' /opt/ct-ng/"$T"/sysroot/ 2>/dev/null | head -1
+        echo "mingw-w64 :"
+        find /opt/ct-ng/"$T"/sysroot -name _mingw_mac.h -exec \
+            grep -hE '#define __MINGW64_VERSION_(MAJOR|MINOR|BUGFIX|STATE)\b' {} + | sort -u
         printf 'thread model : '; "$T-gcc" -v 2>&1 | grep -i 'thread model' || true
         nasm -v
         meson --version | sed 's/^/meson /'
@@ -314,8 +314,10 @@ build_luajit() {
     cd "$SRC/luajit"
     sed -i '/^Libs\.private/d' etc/luajit.pc
     # Mêmes réglages que ci/build-mingw64-full.sh de mpv (LUA52COMPAT, statique, amalgame).
-    make TARGET_SYS=Windows PREFIX="$PREFIX" HOST_CC=gcc CFLAGS="-O2 -pipe" CROSS="$T-" \
-        TARGET_CFLAGS="$CFLAGS" BUILDMODE=static XCFLAGS=-DLUAJIT_ENABLE_LUA52COMPAT \
+    # src/Makefile ne définit pas LDFLAGS : sans « LDFLAGS= », celui de l'environnement (options de l'éditeur de
+    # liens mingw) irait aussi aux outils de l'hôte (l. 192 et 204) ; il passe par TARGET_LDFLAGS (l. 232), cible seule.
+    make TARGET_SYS=Windows PREFIX="$PREFIX" HOST_CC=gcc CFLAGS="-O2 -pipe" LDFLAGS= CROSS="$T-" \
+        TARGET_CFLAGS="$CFLAGS" TARGET_LDFLAGS="$LDFLAGS" BUILDMODE=static XCFLAGS=-DLUAJIT_ENABLE_LUA52COMPAT \
         FILE_T=luajit.exe INSTALL_DEP=src/luajit.exe amalg install
     endgroup
 }
