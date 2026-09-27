@@ -1,0 +1,30 @@
+# Fichier croisé meson de sme-media-build (x86_64-w64-mingw32, chaîne crosstool-NG de l'image base-win64).
+# Dérivé de images/base-win64/cross.meson de BtbN/FFmpeg-Builds, sans exe_wrapper : rien n'est exécuté sous wine.
+# Les options de compilation vivent ici, pas dans l'environnement (en croisé, meson ne lit CFLAGS que pour la machine de build).
+
+[binaries]
+c = 'x86_64-w64-mingw32-gcc'
+cpp = 'x86_64-w64-mingw32-g++'
+ar = 'x86_64-w64-mingw32-gcc-ar'
+ranlib = 'x86_64-w64-mingw32-gcc-ranlib'
+strip = 'x86_64-w64-mingw32-strip'
+windres = 'x86_64-w64-mingw32-windres'
+dlltool = 'x86_64-w64-mingw32-dlltool'
+nasm = 'nasm'
+pkg-config = 'pkg-config'
+
+[properties]
+needs_exe_wrapper = true
+pkg_config_libdir = ['/work/prefix/lib/pkgconfig', '/work/prefix/share/pkgconfig']
+
+[built-in options]
+c_args = ['-D_FORTIFY_SOURCE=2', '-fstack-protector-strong']
+cpp_args = ['-D_FORTIFY_SOURCE=2', '-fstack-protector-strong']
+c_link_args = ['-static-libgcc', '-static-libstdc++', '-fstack-protector-strong', '-Wl,--no-insert-timestamp']
+cpp_link_args = ['-static-libgcc', '-static-libstdc++', '-fstack-protector-strong', '-Wl,--no-insert-timestamp']
+
+[host_machine]
+system = 'windows'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'

@@ -1,0 +1,15 @@
+# Outils de compilation de PyAV (runner Windows), épinglés par version et par empreinte (PyPI, relevé du 2026-09-27).
+# Mêmes versions que la « Voie 1 » qui a produit le wheel av actuel de SME (tools/av_lgpl/build_av_lgpl.py), plus packaging (requis par wheel).
+cython==3.2.8 \
+    --hash=sha256:0961ba91f59492d1bef974cc6b45993c743162776188bcb79e029b442d5d4fcc \
+    --hash=sha256:f635e113677666de13a2ec2979e9b1d5b90617cdfd1a691d3559be81e2dd6cb9
+setuptools==83.0.0 \
+    --hash=sha256:29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3
+wheel==0.47.0 \
+    --hash=sha256:212281cab4dff978f6cedd499cd893e1f620791ca6ff7107cf270781e587eced
+packaging==26.3 \
+    --hash=sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c
+delvewheel==1.13.0 \
+    --hash=sha256:eb8c34dee5d8816516befde73bf5cf9ea6142955f41d3baf25381c0136b28608
+pefile==2024.8.26 \
+    --hash=sha256:76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f
