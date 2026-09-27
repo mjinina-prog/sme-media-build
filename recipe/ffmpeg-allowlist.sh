@@ -64,6 +64,7 @@ FF_DECODERS=(
     qtrle             # QuickTime Animation
     vc1               # VC-1
     wmv3              # WMV9
+    msmpeg4v3         # MS-MPEG-4 v3 (DivX 3, « DIV3 ») en AVI : un échantillon AVI de M5 est refusé sans lui
     av1               # AV1 natif : support des hwaccels AV1 (d3d11va, dxva2, nvdec)
     libdav1d          # AV1 logiciel (dav1d)
     vp8               # VP8
