@@ -12,7 +12,14 @@ rm -rf "$work" "$out"
 mkdir -p "$work" "$out"
 
 if [ -n "${IMAGE_ARCHIVE_DIR:-}" ]; then
-    (cd "$IMAGE_ARCHIVE_DIR" && sha256sum -c base-win64.docker.tar.zst.sha256)
+    # L'empreinte porte sur l'archive entière, que la release ne contient qu'en parties : on la recompose.
+    want="$(cut -d' ' -f1 "$IMAGE_ARCHIVE_DIR/base-win64.docker.tar.zst.sha256")"
+    got="$(cat "$IMAGE_ARCHIVE_DIR"/base-win64.docker.tar.zst.part-* | sha256sum | cut -d' ' -f1)"
+    if [ -z "$want" ] || [ "$got" != "$want" ]; then
+        echo "archive de l'image : empreinte $got, attendu $want" >&2
+        exit 1
+    fi
+    echo "archive de l'image : empreinte $got conforme"
     cat "$IMAGE_ARCHIVE_DIR"/base-win64.docker.tar.zst.part-* | zstd -d -c | docker load
     image="$(docker image ls --digests --format '{{.ID}}' | head -1)"
     for ref in "$TOOLCHAIN_IMAGE_ID" "${TOOLCHAIN_MIRROR}@${TOOLCHAIN_DIGEST}" "${TOOLCHAIN_MIRROR}:${TOOLCHAIN_MIRROR_TAG}"; do
