@@ -67,6 +67,7 @@ FF_DECODERS=(
     msmpeg4v3         # MS-MPEG-4 v3 (DivX 3, « DIV3 ») en AVI : un échantillon AVI de M5 est refusé sans lui
     wmv1              # WMV 7 (ASF) : un échantillon WMV de M5 est refusé sans lui
     wmv2              # WMV 8 (ASF) : un échantillon WMV de M5 est refusé sans lui
+    indeo5            # Intel Indeo Video 5 (IV50) en AVI : un échantillon AVI de M5 est refusé sans lui
     av1               # AV1 natif : support des hwaccels AV1 (d3d11va, dxva2, nvdec)
     libdav1d          # AV1 logiciel (dav1d)
     vp8               # VP8
