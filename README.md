@@ -34,12 +34,12 @@ sont publiés avec chaque release.
 Toutes les entrées sont épinglées dans `pins.env` : commits de chaque composant, digest de l'image de la chaîne d'outils.
 
 1. **Chaîne d'outils** — l'image `ghcr.io/btbn/ffmpeg-builds/base-win64` (Ubuntu + crosstool-NG `x86_64-w64-mingw32`,
-   sans aucune bibliothèque), lue **par digest** : `recipe/run-build.sh` la tire du miroir
-   `ghcr.io/mjinina-prog/sme-media-build/base-win64` tant qu'il sert ce digest, sinon de l'image amont, et vérifie
-   son identifiant (`TOOLCHAIN_IMAGE_ID` de `pins.env`) avant de construire.
-   Depuis le 2026-09-27, ce dépôt **ne publie plus l'image et ne la met plus en miroir** : un paquet créé par le
-   workflow d'un dépôt public hérite de sa visibilité, et un paquet public ne redevient jamais privé. Le miroir déjà
-   créé sert tant qu'il existe. La **copie de référence** de l'image (`docker save`, zstd) est tenue hors ligne
+   sans aucune bibliothèque), lue **par digest** : `recipe/run-build.sh` la tire de l'image amont, et vérifie
+   son identifiant (`TOOLCHAIN_IMAGE_ID` de `pins.env`) avant de construire. BtbN ne garde que deux versions de
+   ce paquet : le digest peut disparaître à un renouvellement.
+   Ce dépôt **ne publie pas l'image et ne la met pas en miroir** : un paquet créé par le workflow d'un dépôt public
+   hérite de sa visibilité, et un paquet public ne redevient jamais privé ; le miroir créé le 2026-09-27 a été
+   supprimé le même jour. La **copie de référence** de l'image (`docker save`, zstd) est tenue hors ligne
    par le mainteneur ; son empreinte est `TOOLCHAIN_ARCHIVE_SHA256` (`pins.env`). Pour construire à partir d'elle :
    `IMAGE_ARCHIVE_DIR=<répertoire de l'archive> bash recipe/run-build.sh`.
 2. **Sources** — `recipe/fetch-sources.sh out/sources` récupère chaque composant à son commit et en fait une archive.

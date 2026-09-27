@@ -3,8 +3,7 @@
 # Source de l'image, dans l'ordre :
 #   1. une archive `docker save` si IMAGE_ARCHIVE_DIR est posé (parties base-win64.docker.tar.zst.part-* et leur
 #      empreinte : c'est la copie de référence, tenue hors ligne ; elle n'est plus publiée avec les releases) ;
-#   2. sinon le miroir ghcr, par digest ;
-#   3. s'il ne sert plus ce digest, l'image amont de BtbN, par le même digest.
+#   2. sinon l'image amont de BtbN, par digest (BtbN ne garde que deux versions : le digest peut disparaître).
 # Quelle que soit la source, l'identifiant de l'image est comparé à celui de pins.env avant toute construction.
 # Entrées : out/sources (archives). Sortie : out/build.
 set -euo pipefail
@@ -32,13 +31,13 @@ if [ -n "${IMAGE_ARCHIVE_DIR:-}" ]; then
     echo "archive de l'image : empreinte $got conforme"
     cat "$IMAGE_ARCHIVE_DIR"/base-win64.docker.tar.zst.part-* | zstd -d -c | docker load
     image="$(docker image ls --digests --format '{{.ID}}' | head -1)"
-    for ref in "$TOOLCHAIN_IMAGE_ID" "${TOOLCHAIN_MIRROR}@${TOOLCHAIN_DIGEST}" "${TOOLCHAIN_MIRROR}:${TOOLCHAIN_MIRROR_TAG}"; do
+    for ref in "$TOOLCHAIN_IMAGE_ID" "${TOOLCHAIN_UPSTREAM}@${TOOLCHAIN_DIGEST}"; do
         if docker image inspect "$ref" >/dev/null 2>&1; then image="$ref"; break; fi
     done
     source_image="archive (IMAGE_ARCHIVE_DIR)"
 else
     image=""
-    for ref in "${TOOLCHAIN_MIRROR}@${TOOLCHAIN_DIGEST}" "${TOOLCHAIN_UPSTREAM}@${TOOLCHAIN_DIGEST}"; do
+    for ref in "${TOOLCHAIN_UPSTREAM}@${TOOLCHAIN_DIGEST}"; do
         if docker pull -q "$ref"; then image="$ref"; break; fi
         echo "image indisponible : $ref" >&2
     done

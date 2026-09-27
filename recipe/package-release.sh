@@ -51,7 +51,6 @@ git -C "$here" rev-parse HEAD > "$stage/sme-media-source/RECIPE_COMMIT"
 cat > "$stage/sme-media-source/TOOLCHAIN.txt" <<EOF
 Image de la chaîne d'outils (DA-6)
 amont       : ${TOOLCHAIN_UPSTREAM}@${TOOLCHAIN_DIGEST}
-miroir      : ${TOOLCHAIN_MIRROR}@${TOOLCHAIN_DIGEST} (étiquette ${TOOLCHAIN_MIRROR_TAG}), tant qu'il existe
 identifiant : ${TOOLCHAIN_IMAGE_ID} (empreinte de sa configuration)
 archive     : non publiée ; copie de référence tenue hors ligne (docker save, zstd),
               empreinte ${TOOLCHAIN_ARCHIVE_SHA256}
