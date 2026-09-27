@@ -301,11 +301,16 @@ build_libplacebo() {
     for sm in $LIBPLACEBO_SUBMODULES; do
         extract "libplacebo-$(basename "$sm" | tr 'A-Z_' 'a-z-')"
     done
+    # dovi : remise en forme Dolby Vision de libplacebo, code propre sans dépendance (arbitrage d'architecte du
+    # 2026-09-27) ; libdovi (bibliothèque Rust externe) reste désactivé. Seule la sortie gpu-next l'applique.
     meson_static "$SRC/libplacebo" "$BLD/libplacebo" -Dauto_features=disabled \
         -Dvulkan=disabled -Dvk-proc-addr=disabled -Dopengl=disabled -Dgl-proc-addr=disabled \
         -Dd3d11=enabled -Dglslang=disabled -Dshaderc=enabled \
-        -Dlcms=disabled -Ddovi=disabled -Dlibdovi=disabled -Dunwind=disabled -Dxxhash=disabled \
+        -Dlcms=disabled -Ddovi=enabled -Dlibdovi=disabled -Dunwind=disabled -Dxxhash=disabled \
         -Ddemos=false -Dtests=false -Dbench=false -Dfuzz=false -Ddebug-abort=false
+    # Fonctions retenues, telles que libplacebo les déclare à mpv (PL_HAVE_*).
+    cp "$PREFIX/include/libplacebo/config.h" "$OUT/meta/libplacebo-config.h"
+    grep -q '^#define PL_HAVE_DOVI 1' "$OUT/meta/libplacebo-config.h"
     endgroup
 }
 
