@@ -76,7 +76,7 @@ record_toolchain() {
     set +e +o pipefail
     {
         echo "# chaîne d'outils (relevé dans le conteneur)"
-        echo "image: $TOOLCHAIN_MIRROR@$TOOLCHAIN_DIGEST"
+        echo "image: digest $TOOLCHAIN_DIGEST, identifiant $TOOLCHAIN_IMAGE_ID (amont $TOOLCHAIN_UPSTREAM)"
         grep -E '^(PRETTY_NAME|VERSION_ID)=' /etc/os-release || true
         "$T-gcc" --version | head -1
         "$T-ld" --version | head -1

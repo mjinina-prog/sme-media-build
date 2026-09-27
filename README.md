@@ -34,8 +34,14 @@ sont publiés avec chaque release.
 Toutes les entrées sont épinglées dans `pins.env` : commits de chaque composant, digest de l'image de la chaîne d'outils.
 
 1. **Chaîne d'outils** — l'image `ghcr.io/btbn/ffmpeg-builds/base-win64` (Ubuntu + crosstool-NG `x86_64-w64-mingw32`,
-   sans aucune bibliothèque), lue **par digest**, mise en miroir sous `ghcr.io/mjinina-prog/sme-media-build/base-win64`
-   (même digest) et archivée par `docker save` dans chaque release.
+   sans aucune bibliothèque), lue **par digest** : `recipe/run-build.sh` la tire du miroir
+   `ghcr.io/mjinina-prog/sme-media-build/base-win64` tant qu'il sert ce digest, sinon de l'image amont, et vérifie
+   son identifiant (`TOOLCHAIN_IMAGE_ID` de `pins.env`) avant de construire.
+   Depuis le 2026-09-27, ce dépôt **ne publie plus l'image et ne la met plus en miroir** : un paquet créé par le
+   workflow d'un dépôt public hérite de sa visibilité, et un paquet public ne redevient jamais privé. Le miroir déjà
+   créé sert tant qu'il existe. La **copie de référence** de l'image (`docker save`, zstd) est tenue hors ligne
+   par le mainteneur ; son empreinte est `TOOLCHAIN_ARCHIVE_SHA256` (`pins.env`). Pour construire à partir d'elle :
+   `IMAGE_ARCHIVE_DIR=<répertoire de l'archive> bash recipe/run-build.sh`.
 2. **Sources** — `recipe/fetch-sources.sh out/sources` récupère chaque composant à son commit et en fait une archive.
 3. **Construction** — `recipe/run-build.sh` exécute `recipe/build-all.sh` dans l'image.
 4. **PyAV** — `pyav/build_pyav.py` (Windows, MSVC).
@@ -45,8 +51,9 @@ Le workflow `.github/workflows/build.yml` enchaîne ces étapes (déclenchement 
 ## Source correspondante
 
 Chaque release contient les archives de **chaque composant au commit utilisé**, cette recette, le workflow,
-et l'image de la chaîne d'outils (`docker save`). C'est l'offre de source des bibliothèques LGPL livrées
-(LGPL-2.1 § 4 et § 6).
+les références de la chaîne d'outils (`TOOLCHAIN.txt`) et la liste des modifications apportées aux sources à la
+construction (`MODIFICATIONS.txt`). C'est l'offre de source des bibliothèques LGPL livrées (LGPL-2.1 § 4 et § 6).
+La chaîne d'outils elle-même (compilateur, éditeur de liens) n'en fait pas partie.
 
 ## Ce dépôt ne contient pas
 

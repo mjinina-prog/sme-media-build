@@ -1,49 +1,31 @@
 # Construction de sme-media-build : FFmpeg 8.1 partagé (liste d'autorisation), libmpv liée à ces DLL,
 # PyAV 18 compilé contre elles ; balayage bloquant (DA-7) ; release avec la source correspondante (DA-8).
 # Déclenchement manuel seulement. Les actions tierces sont épinglées par commit.
+#
+# L'image de la chaîne d'outils n'est ni mise en miroir ni publiée par ce workflow : un paquet créé par le
+# GITHUB_TOKEN d'un dépôt public hérite de sa visibilité, donc public, et un paquet public ne redevient jamais
+# privé (documentation GitHub). Elle est lue par digest (recipe/run-build.sh) ; sa copie de référence est tenue
+# hors ligne (README, « Reproduire »).
 name: construction
 
 on:
   workflow_dispatch:
     inputs:
-      mirror:
-        description: "Mettre en miroir l'image de la chaîne d'outils sur ghcr (première exécution)"
-        type: boolean
-        default: false
-      toolchain_from_release:
-        description: "Étiquette de release dont l'archive docker save fournit l'image (contrôle de restauration, M7)"
-        type: string
-        default: ""
       release_tag:
         description: "Si renseignée : publier une release sous cette étiquette"
         type: string
         default: ""
+      livraison:
+        description: "Release de livraison (sinon : préversion de mesure)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
-  mirror:
-    name: miroir de la chaîne d'outils
-    if: ${{ inputs.mirror }}
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Copier l'image (digest conservé)
-        env:
-          GHCR_USER: ${{ github.actor }}
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash recipe/mirror-toolchain.sh
-
   sources:
     name: sources épinglées
-    needs: mirror
-    if: ${{ !cancelled() && (needs.mirror.result == 'success' || needs.mirror.result == 'skipped') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -58,8 +40,7 @@ jobs:
           compression-level: 0
           if-no-files-found: error
 
-  # Conditions explicites : sans elles, un « mirror » sauté ferait sauter toute la chaîne (success() implicite
-  # porte sur tous les travaux dont on dépend, directement ou non).
+  # Conditions explicites : success() implicite porterait sur tous les travaux dont on dépend, directement ou non.
   build:
     name: FFmpeg partagé + libmpv (mingw)
     needs: sources
@@ -78,15 +59,6 @@ jobs:
         with:
           name: sources
           path: out/sources
-      - name: Archive de l'image (restauration)
-        if: ${{ inputs.toolchain_from_release != '' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/toolchain"
-          gh release download "${{ inputs.toolchain_from_release }}" --repo "$GITHUB_REPOSITORY" \
-            --pattern 'base-win64.docker.tar.zst*' --dir "$RUNNER_TEMP/toolchain"
-          echo "IMAGE_ARCHIVE_DIR=$RUNNER_TEMP/toolchain" >> "$GITHUB_ENV"
       - name: Construire dans l'image épinglée
         env:
           GHCR_USER: ${{ github.actor }}
@@ -196,29 +168,31 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
-      packages: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Libérer de la place
-        run: bash recipe/free-disk.sh
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: "{sources,build-bin,build-dev,build-maps,build-meta,wheel,audit}"
           path: in
-      - name: Archive docker save de l'image miroir
-        env:
-          GHCR_USER: ${{ github.actor }}
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
-          bash recipe/save-toolchain.sh in/toolchain
       - name: Assembler
         run: bash recipe/package-release.sh "${{ inputs.release_tag }}" in out/release
       - name: Publier
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LIVRAISON: ${{ inputs.livraison }}
         run: |
+          # Une seule source pour les notes : RELEASE_NOTES.md ; seule la ligne de statut dépend du type de release.
+          if [ "$LIVRAISON" = "true" ]; then
+            statut="release de livraison, destinée à SME Subtitle Editor (chantier LIBMPV)."
+            type_release=()
+          else
+            statut="préversion, produite pour mesure ; elle n'est livrée avec aucune version de SME Subtitle Editor."
+            type_release=(--prerelease)
+          fi
+          sed "s|@STATUT@|$statut|" RELEASE_NOTES.md > "$RUNNER_TEMP/notes.md"
+          grep -qF "$statut" "$RUNNER_TEMP/notes.md"
           gh release create "${{ inputs.release_tag }}" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --prerelease --title "sme-media ${{ inputs.release_tag }}" --notes-file RELEASE_NOTES.md out/release/*
+            "${type_release[@]}" --title "sme-media ${{ inputs.release_tag }}" \
+            --notes-file "$RUNNER_TEMP/notes.md" out/release/*
