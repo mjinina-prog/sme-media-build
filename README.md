@@ -64,5 +64,6 @@ La chaîne d'outils elle-même (compilateur, éditeur de liens) n'en fait pas pa
 
 - `recipe/cross-mingw64.meson` et `recipe/toolchain-mingw64.cmake` sont dérivés de fichiers de
   [BtbN/FFmpeg-Builds](https://github.com/BtbN/FFmpeg-Builds) (licence MIT, texte dans `third_party/BtbN-FFmpeg-Builds.LICENSE`).
-- Licence des autres scripts de ce dépôt : à définir.
+- Les autres fichiers de ce dépôt (recette, scripts, workflow) sont sous licence MIT, © 2026 Voicing Crew :
+  texte dans `LICENSE`.
 - Les composants construits gardent leur licence ; l'inventaire de chaque release les liste.
